@@ -29,6 +29,8 @@ PENDING_CHECK_STATES = {
 }
 REVIEW_BOT_LOGIN_KEYWORDS = {
     "codex",
+    "copilot",
+    "devin",
 }
 TRUSTED_AUTHOR_ASSOCIATIONS = {
     "OWNER",
