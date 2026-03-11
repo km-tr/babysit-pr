@@ -446,8 +446,11 @@ def extract_login(user_obj):
     return ""
 
 
+BOT_LOGIN_WHITELIST = {"Copilot"}
+
+
 def is_bot_login(login):
-    return bool(login) and login.endswith("[bot]")
+    return bool(login) and (login.endswith("[bot]") or login in BOT_LOGIN_WHITELIST)
 
 
 def is_actionable_review_bot_login(login):
