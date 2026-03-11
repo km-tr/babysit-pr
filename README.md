@@ -1,60 +1,74 @@
-<p align="center"><code>npm i -g @openai/codex</code><br />or <code>brew install --cask codex</code></p>
-<p align="center"><strong>Codex CLI</strong> is a coding agent from OpenAI that runs locally on your computer.
-<p align="center">
-  <img src="https://github.com/openai/codex/blob/main/.github/codex-cli-splash.png" alt="Codex CLI splash" width="80%" />
-</p>
-</br>
-If you want Codex in your code editor (VS Code, Cursor, Windsurf), <a href="https://developers.openai.com/codex/ide">install in your IDE.</a>
-</br>If you want the desktop app experience, run <code>codex app</code> or visit <a href="https://chatgpt.com/codex?app-landing-page=true">the Codex App page</a>.
-</br>If you are looking for the <em>cloud-based agent</em> from OpenAI, <strong>Codex Web</strong>, go to <a href="https://chatgpt.com/codex">chatgpt.com/codex</a>.</p>
+# babysit-pr
 
----
+GitHub PR babysitter skill for AI coding agents. Continuously monitors a pull request's CI checks, review comments, and mergeability state, then takes action automatically — diagnosing failures, retrying flaky jobs, addressing review feedback, and pushing fixes — until the PR is ready to merge or requires human intervention.
 
-## Quickstart
+## Features
 
-### Installing and running Codex CLI
+- **CI Monitoring** — Polls check suites / workflow runs and classifies failures as branch-related or flaky/unrelated.
+- **Automatic Flaky Retry** — Reruns likely-flaky failed jobs (up to a configurable limit, default 3).
+- **Review Comment Handling** — Surfaces trusted human and approved bot review comments for the agent to address.
+- **Mergeability Tracking** — Watches merge-conflict and review-approval state alongside CI.
+- **Adaptive Polling** — Backs off exponentially when CI is green and nothing changes; snaps back to fast polling on any state change.
 
-Install globally with your preferred package manager:
+## Directory Structure
 
-```shell
-# Install using npm
-npm install -g @openai/codex
+```
+skills/babysit-pr/
+├── SKILL.md                        # Full skill specification (for the AI agent)
+├── agents/
+│   └── openai.yaml                 # OpenAI Codex agent interface config
+├── references/
+│   ├── heuristics.md               # CI failure classification checklist & decision tree
+│   └── github-api-notes.md         # GitHub CLI / API reference used by the watcher
+└── scripts/
+    └── gh_pr_watch.py              # Watcher script (Python 3, requires `gh` CLI)
 ```
 
-```shell
-# Install using Homebrew
-brew install --cask codex
+## Requirements
+
+- Python 3.8+
+- [GitHub CLI (`gh`)](https://cli.github.com/) authenticated with access to the target repository
+
+## Quick Start
+
+### One-shot snapshot
+
+```bash
+python3 skills/babysit-pr/scripts/gh_pr_watch.py --pr auto --once
 ```
 
-Then simply run `codex` to get started.
+### Continuous watch (JSONL stream)
 
-<details>
-<summary>You can also go to the <a href="https://github.com/openai/codex/releases/latest">latest GitHub Release</a> and download the appropriate binary for your platform.</summary>
+```bash
+python3 skills/babysit-pr/scripts/gh_pr_watch.py --pr auto --watch
+```
 
-Each GitHub Release contains many executables, but in practice, you likely want one of these:
+### Retry failed checks
 
-- macOS
-  - Apple Silicon/arm64: `codex-aarch64-apple-darwin.tar.gz`
-  - x86_64 (older Mac hardware): `codex-x86_64-apple-darwin.tar.gz`
-- Linux
-  - x86_64: `codex-x86_64-unknown-linux-musl.tar.gz`
-  - arm64: `codex-aarch64-unknown-linux-musl.tar.gz`
+```bash
+python3 skills/babysit-pr/scripts/gh_pr_watch.py --pr auto --retry-failed-now
+```
 
-Each archive contains a single entry with the platform baked into the name (e.g., `codex-x86_64-unknown-linux-musl`), so you likely want to rename it to `codex` after extracting it.
+### Target a specific PR
 
-</details>
+```bash
+python3 skills/babysit-pr/scripts/gh_pr_watch.py --pr 42 --once
+python3 skills/babysit-pr/scripts/gh_pr_watch.py --pr https://github.com/owner/repo/pull/42 --watch
+```
 
-### Using Codex with your ChatGPT plan
+## CLI Options
 
-Run `codex` and select **Sign in with ChatGPT**. We recommend signing into your ChatGPT account to use Codex as part of your Plus, Pro, Team, Edu, or Enterprise plan. [Learn more about what's included in your ChatGPT plan](https://help.openai.com/en/articles/11369540-codex-in-chatgpt).
+| Flag | Description |
+|---|---|
+| `--pr` | `auto` (infer from current branch), PR number, or PR URL. Default: `auto` |
+| `--repo` | Optional `OWNER/REPO` override |
+| `--once` | Emit a single JSON snapshot and exit |
+| `--watch` | Continuously emit JSONL snapshots until a stop condition |
+| `--retry-failed-now` | Rerun failed jobs for current failed workflow runs |
+| `--poll-seconds` | Base polling interval in seconds (default: 30) |
+| `--max-flaky-retries` | Max rerun cycles per head SHA (default: 3) |
+| `--state-file` | Path to state JSON file (auto-generated if omitted) |
 
-You can also use Codex with an API key, but this requires [additional setup](https://developers.openai.com/codex/auth#sign-in-with-an-api-key).
+## License
 
-## Docs
-
-- [**Codex Documentation**](https://developers.openai.com/codex)
-- [**Contributing**](./docs/contributing.md)
-- [**Installing & building**](./docs/install.md)
-- [**Open source fund**](./docs/open-source-fund.md)
-
-This repository is licensed under the [Apache-2.0 License](LICENSE).
+Apache-2.0
