@@ -29,7 +29,7 @@ If uncertain, inspect failed logs once before choosing rerun.
    - If likely flaky/unrelated and all checks for the current SHA are terminal: rerun failed jobs.
    - If checks are still pending: wait.
 3. If flaky reruns for the same SHA reach the configured limit (default 3): stop and report persistent failure.
-4. Independently, process any new human review comments.
+4. Independently, process any new human or approved-bot review comments.
 
 ## Review comment agreement criteria
 
